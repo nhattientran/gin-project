@@ -1,0 +1,123 @@
+{
+	"info": {
+		"_postman_id": "fc8b96fe-c0c1-4847-8b2b-658a75d76707",
+		"name": "gin-golang",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "34028377"
+	},
+	"item": [
+		{
+			"name": "Get data",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Create data",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"genres\": [\"action\",\"comedy\"],\r\n    \"runtime\": \"123 mins\",\r\n    \"title\": \"test movie\",\r\n    \"year\": 2000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/v1/movies"
+			},
+			"response": []
+		},
+		{
+			"name": "Update data",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"genres\": [\"action\",\"comedy\"],\r\n    \"runtime\": \"123 mins\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/v1/movies/ca25f2c2-4a6a-40b9-b633-574ae8602af7"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "{{base_url}}/v1/movies/ca25f2c2-4a6a-40b9-b633-574ae8602af7"
+			},
+			"response": []
+		},
+		{
+			"name": "List data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/v1/movies?page=1&page_size=10&genres=action&sort=year",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"v1",
+						"movies"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "10"
+						},
+						{
+							"key": "genres",
+							"value": "action"
+						},
+						{
+							"key": "sort",
+							"value": "year"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{base_url}}/"
+			},
+			"response": []
+		},
+		{
+			"name": "HealthCheck",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{base_url}}/v1/health"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "localhost:4000"
+		}
+	]
+}

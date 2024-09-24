@@ -27,12 +27,12 @@ func (s *Server) createMovieHandler(c *gin.Context) {
 	var movie data.Movie
 	err := c.ShouldBindJSON(&movie)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	v := validator.New()
 	if data.ValidateMovie(v, &movie); !v.Valid() {
-		c.JSON(http.StatusBadRequest, s.errorResponse(v.Errors))
+		s.errorResponse(c, http.StatusBadRequest, v.Errors)
 		return
 	}
 
@@ -46,17 +46,17 @@ func (s *Server) showMovieHandler(c *gin.Context) {
 	id := c.Param("id")
 	_, err := uuid.Parse(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	movie, err := s.models.Movies.Get(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, data.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, s.errorResponse("movie not found"))
+			s.notFoundResponse(c)
 			return
 		}
 		s.errorLog.PrintError(err, nil)
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, movie)
@@ -73,25 +73,25 @@ func (s *Server) updateMovieHandler(c *gin.Context) {
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
 		s.errorLog.PrintError(err, nil)
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	movie, err := s.models.Movies.Get(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, data.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, s.notFoundResponse())
+			s.notFoundResponse(c)
 			return
 		}
 		s.errorLog.PrintError(err, nil)
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	movie.ID, err = uuid.Parse(id)
 	if err != nil {
 		s.errorLog.PrintError(err, nil)
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -114,14 +114,14 @@ func (s *Server) updateMovieHandler(c *gin.Context) {
 	v := validator.New()
 	if data.ValidateMovie(v, movie); !v.Valid() {
 		s.errorLog.PrintError(err, nil)
-		c.JSON(http.StatusBadRequest, s.errorResponse(v.Errors))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// update
 	err = s.models.Movies.Update(c.Request.Context(), movie)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, movie)
@@ -133,17 +133,17 @@ func (s *Server) deleteMovieHandler(c *gin.Context) {
 	_, err := uuid.Parse(id)
 	if err != nil {
 		s.errorLog.PrintError(err, nil)
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	// delete
 	err = s.models.Movies.Delete(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, data.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, s.errorResponse("movie not found"))
+			s.notFoundResponse(c)
 			return
 		}
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "movie deleted"})
@@ -160,7 +160,7 @@ func (s *Server) listMoviesHandler(c *gin.Context) {
 	// bind
 	err := c.ShouldBindQuery(&input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if len(input.Genres) > 0 {
@@ -169,14 +169,14 @@ func (s *Server) listMoviesHandler(c *gin.Context) {
 
 	v := validator.New()
 	if data.ValidateFilters(v, input.Filters); !v.Valid() {
-		c.JSON(http.StatusBadRequest, s.errorResponse(v.Errors))
+		s.errorResponse(c, http.StatusBadRequest, v.Errors)
 		return
 	}
 
 	// get movies
 	movies, err := s.models.Movies.List(c.Request.Context(), input.Title, input.Genres, &input.Filters)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, s.errorResponse(err.Error()))
+		s.errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"flag"
 	"fmt"
 	"gin-project/internal/data"
 	logger "gin-project/internal/log"
@@ -18,8 +19,13 @@ import (
 const version = "1.0.0"
 
 type config struct {
-	port int
-	env  string
+	port    int
+	env     string
+	limiter struct {
+		rps     float64
+		burst   int
+		enabled bool
+	}
 }
 
 type Server struct {
@@ -39,11 +45,16 @@ var (
 )
 
 func NewServer() *http.Server {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	cfg := config{
-		port: port,
-		env:  os.Getenv("APP_ENV"),
-	}
+
+	var cfg config
+	port, _ := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
+	flag.IntVar(&cfg.port, "port", int(port), "API server port")
+	flag.StringVar(&cfg.env, "env", os.Getenv("APP_ENV"), "Environment (development|staging|production)")
+
+	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+	flag.Parse()
 
 	db := database.New()
 	NewServer := &Server{

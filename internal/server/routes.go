@@ -8,6 +8,8 @@ import (
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.Default()
+	r.Use(s.recoverPanic())
+	r.Use(s.rateLimit())
 
 	r.GET("/", s.health)
 	r.GET("/v1/health", s.healthHandler)

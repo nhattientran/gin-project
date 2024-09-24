@@ -1,15 +1,12 @@
 package main
 
 import (
-	"gin-project/internal/server"
+	svr "gin-project/internal/server"
 )
 
 func main() {
-
-	logger := server.InfoLog
-	server := server.NewServer()
-
+	server := svr.NewServer()
 	err := server.ListenAndServe()
 
-	logger.PrintFatal(err, nil)
+	svr.InfoLog.PrintFatal(err, nil)
 }

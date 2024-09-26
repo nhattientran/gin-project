@@ -1,8 +1,14 @@
 package validator
 
+import "regexp"
+
 type Validator struct {
 	Errors map[string]string
 }
+
+var (
+	EmailRX = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+)
 
 func New() *Validator {
 	return &Validator{Errors: make(map[string]string)}
@@ -34,6 +40,15 @@ func In(value string, list ...string) bool {
 		}
 	}
 	return false
+}
+
+// Matches return true if all string match regexp
+func (v *Validator) Matches(value string, rx *regexp.Regexp) bool {
+	return rx.MatchString(value)
+}
+
+func Matches(value string, rx *regexp.Regexp) bool {
+	return rx.MatchString(value)
 }
 
 // Unique check if value is unique in list

@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"gin-project/internal/data"
@@ -8,7 +10,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -29,12 +33,13 @@ type config struct {
 }
 
 type Server struct {
-	config config
-
-	models   data.Models
-	infoLog  *logger.Logger
-	errorLog *logger.Logger
-	db       database.Service
+	config     config
+	models     data.Models
+	infoLog    *logger.Logger
+	errorLog   *logger.Logger
+	warningLog *logger.Logger
+	fatalLog   *logger.Logger
+	db         database.Service
 }
 
 var (
@@ -44,7 +49,7 @@ var (
 	FatalLog   = logger.New(os.Stderr, logger.LevelFatal)
 )
 
-func NewServer() *http.Server {
+func NewServer() error {
 
 	var cfg config
 	port, _ := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
@@ -57,12 +62,15 @@ func NewServer() *http.Server {
 	flag.Parse()
 
 	db := database.New()
+	defer db.Close()
 	NewServer := &Server{
-		config:   cfg,
-		infoLog:  InfoLog,
-		errorLog: ErrorLog,
-		models:   data.NewModels(db),
-		db:       db,
+		config:     cfg,
+		infoLog:    InfoLog,
+		errorLog:   ErrorLog,
+		warningLog: WarningLog,
+		fatalLog:   FatalLog,
+		models:     data.NewModels(&db),
+		db:         db,
 	}
 
 	// Declare Server config
@@ -75,10 +83,43 @@ func NewServer() *http.Server {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	shutdownError := make(chan error)
+
+	go func() {
+		quit := make(chan os.Signal, 1)
+
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		s := <-quit
+
+		InfoLog.PrintInfo("shutting down server", map[string]string{
+			"signal": s.String(),
+		})
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		shutdownError <- server.Shutdown(ctx)
+
+		os.Exit(0)
+	}()
+
 	InfoLog.PrintInfo("starting server", map[string]string{
 		"addr": server.Addr,
 		"env":  cfg.env,
 	})
 
-	return server
+	err := server.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	err = <-shutdownError
+	if err != nil {
+		return err
+	}
+
+	InfoLog.PrintInfo("stopped server", map[string]string{
+		"addr": server.Addr,
+	})
+
+	return nil
 }

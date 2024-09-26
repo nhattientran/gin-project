@@ -5,8 +5,5 @@ import (
 )
 
 func main() {
-	server := svr.NewServer()
-	err := server.ListenAndServe()
-
-	svr.InfoLog.PrintFatal(err, nil)
+	svr.FatalLog.PrintFatal(svr.NewServer(), nil)
 }

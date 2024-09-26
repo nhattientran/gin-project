@@ -20,5 +20,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.DELETE("/v1/movies/:id", s.deleteMovieHandler)
 	r.GET("/v1/movies", s.listMoviesHandler)
 
+	// users routes
+	r.POST("/v1/users", s.registerUserHandler)
+
 	return r
 }

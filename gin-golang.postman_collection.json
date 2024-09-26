@@ -10,7 +10,8 @@
 			"name": "Get data",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": "{{base_url}}/v1/movies/ca25f2c2-4a6a-40b9-b633-574ae8602af7"
 			},
 			"response": []
 		},
@@ -55,7 +56,7 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"url": "{{base_url}}/v1/movies/ca25f2c2-4a6a-40b9-b633-574ae8602af7"
+				"url": "{{base_url}}/v1/movies/ca25f2c2-4a6a-40b9-b633-574ae8602af6"
 			},
 			"response": []
 		},
@@ -110,6 +111,24 @@
 				"method": "GET",
 				"header": [],
 				"url": "{{base_url}}/v1/health"
+			},
+			"response": []
+		},
+		{
+			"name": "register user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"password\":\"abc12345\",\r\n    \"email\":\"tien-tn@blockhive.vn\",\r\n    \"username\":\"nhattien\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/v1/users"
 			},
 			"response": []
 		}

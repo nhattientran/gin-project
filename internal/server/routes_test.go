@@ -25,7 +25,7 @@ func TestHelloWorldHandler(t *testing.T) {
 		t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 	// Check the response body
-	expected := "{\"message\":\"Hello World\"}"
+	expected := "{\"environment\":\"\",\"message\":\"healthy\",\"version\":\"1.0.0\"}"
 	if rr.Body.String() != expected {
 		t.Errorf("Handler returned unexpected body: got %v want %v", rr.Body.String(), expected)
 	}
